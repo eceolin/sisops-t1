@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Program extends BaseMemoryControl {
+public class Program {
 
     private static final String DEFAULT_FOLDER = "programs/";
     private static final Pattern PATTERN = Pattern.compile("(\\S+\\s\\S+)");
@@ -18,8 +18,8 @@ public class Program extends BaseMemoryControl {
     public int totalVariables = 0;
     public int totalLabels = 0;
 
-    public List<InstructionArgument> memory = new ArrayList<>();
-    private List<InstructionArgument> labels = new ArrayList<>();
+    public List<String> memory = new ArrayList<>();
+    private List<String> labels = new ArrayList<>();
 
 
     public Program(String filename, boolean debugMode) {
@@ -40,25 +40,20 @@ public class Program extends BaseMemoryControl {
         BufferedReader br = new BufferedReader(new InputStreamReader(in));
 
         int i = 0;
-        int cont = 0;
 
         while (br.ready()) {
             String linha = br.readLine();
 
             if (!linha.isBlank()) {
                 if (linha.equals(".code")) {
-                    firstInstructionAddress = cont;
                     continue;
                 } else if (linha.equals(".data")) {
-                    firstVariableAddress = cont;
                     continue;
                 } else if (linha.equals(".endcode")) {
                     totalInstructions = i;
-                    lastInstructionAddress = cont;
                     i = 0;
                 } else if (linha.equals(".enddata")) {
                     totalVariables = i;
-                    lastVariableAddress = cont;
                     i = 0;
                 } else {
 
@@ -69,25 +64,19 @@ public class Program extends BaseMemoryControl {
 
                         Matcher m = PATTERN.matcher(args[1]);
                         m.find();
-                        String[] group = m.group().split(" ");
+                        memory.add(m.group());
+                        labels.add("LABEL " + args[0].trim() + " " + i);
 
-                        labels.add(new InstructionArgument(args[0].trim(), String.valueOf(i).trim()));
-                        memory.add(new InstructionArgument(group[0].trim(), group[1].trim()));
                     } else {
                         Matcher m = PATTERN.matcher(linha);
                         m.find();
-                        String[] group = m.group().split(" ");
-                        memory.add(new InstructionArgument(group[0].trim(), group[1].trim()));
+                        memory.add(m.group());
                     }
 
-                    cont++;
                     i++;
                 }
             }
         }
-
-        firstLabelAddress = memory.size();
-        lastLabelAddress = memory.size() + labels.size();
 
         memory.addAll(labels);
 
@@ -103,11 +92,11 @@ public class Program extends BaseMemoryControl {
         System.out.println("Memória");
         System.out.println("==========================================================================");
 
-        String format = "%-15s%-30s%s%n";
-        System.out.printf(format, "Posição", "Instrução", "Argumento");
+        String format = "%-15s%-30s%n";
+        System.out.printf(format, "Posição", "Instrução");
 
         for (int i = 0; i < memory.size(); i++) {
-            System.out.printf(format, i, memory.get(i).instruction, memory.get(i).argument);
+            System.out.printf(format, i, memory.get(i));
         }
 
         System.out.println("==========================================================================");
@@ -119,27 +108,6 @@ public class Program extends BaseMemoryControl {
         System.out.println("Total de variáveis: " + totalVariables);
         System.out.println("Total de marcações: " + totalLabels);
 
-        System.out.println("==========================================================================");
-        System.out.println("==========================================================================");
-        System.out.println("Posições");
-        System.out.println("==========================================================================");
-
-        System.out.println("Posição de memória da primeira variável: " + firstVariableAddress);
-        System.out.println("Posição de memória da última variável: " + lastVariableAddress);
-        System.out.println("Posição de memória da primeira instrução: " + firstInstructionAddress);
-        System.out.println("Posição de memória da última instrução: " + lastInstructionAddress);
-        System.out.println("Posição de memória da primeira marcação: " + firstLabelAddress);
-        System.out.println("Posição de memória da última marcação: " + lastLabelAddress);
         System.out.println("");
-    }
-}
-
-class InstructionArgument {
-    public String instruction;
-    public String argument;
-
-    public InstructionArgument(String instruction, String argument) {
-        this.instruction = instruction;
-        this.argument = argument;
     }
 }

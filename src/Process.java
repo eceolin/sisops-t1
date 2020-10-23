@@ -1,46 +1,58 @@
-public class Process extends BaseMemoryControl {
+public class Process {
 
     public int code;
     public Program program;
     public int priority;
+
+    private int startMemoryAllocation;
     public int arrivalTime;
 
-    public int accPosition;
-    public int pcPosition;
+    public int totalMemory;
 
-    public int waitingTime;
-    public int processingTime;
-    public int turnAroundTime;
+    public static final int TOTAL_RESERVED_POSITIONS = 7;
 
-    public Process(int code, Program program, int priority, int arrivalTime) {
+    public Process(int code, Program program, int priority, int arrivalTime, int totalMemory) {
         this.code = code;
+        this.startMemoryAllocation = -1;
         this.program = program;
         this.priority = priority;
         this.arrivalTime = arrivalTime;
-        this.accPosition = -1;
-        this.pcPosition = -1;
-        this.waitingTime = 0;
-        this.processingTime = 0;
-        this.turnAroundTime = 0;
-    }
-
-    public boolean isInitialized() {
-        return accPosition != -1;
+        this.totalMemory = totalMemory + TOTAL_RESERVED_POSITIONS;
     }
 
     public void initialize(int initialPosition) {
-        this.accPosition = initialPosition;
-        this.pcPosition = initialPosition + 1;
-        this.firstLabelAddress = program.firstLabelAddress + initialPosition + 2;
-        this.firstInstructionAddress = program.firstInstructionAddress + initialPosition + 2;
-        this.firstVariableAddress = program.firstVariableAddress + initialPosition + 2;
-        this.lastInstructionAddress = program.lastInstructionAddress + initialPosition + 2;
-        this.lastLabelAddress = program.lastLabelAddress + initialPosition + 2;
-        this.lastVariableAddress = program.lastVariableAddress + initialPosition + 2;
+        this.startMemoryAllocation = initialPosition;
     }
 
-    //pc position == -1 quando inicia
-    public boolean isReady(int clock) {
-        return clock >= arrivalTime && (pcPosition == -1 || pcPosition != lastInstructionAddress - 1);
+    public int getAccumulatorMemoryPosition() {
+        return startMemoryAllocation;
+    }
+
+    public int getPCMemoryPosition() {
+        return startMemoryAllocation + 1;
+    }
+
+    public int getStateMemoryPosition() {
+        return startMemoryAllocation + 2;
+    }
+
+    public int getFirstInstructionMemoryPosition() {
+        return startMemoryAllocation + 7;
+    }
+
+    public int getArrivalTimeMemoryPosition() {
+        return startMemoryAllocation + 3;
+    }
+
+    public int getIdleTimeMemoryPosition() {
+        return startMemoryAllocation + 4;
+    }
+
+    public int getRunningTimeMemoryPosition() {
+        return startMemoryAllocation + 5;
+    }
+
+    public int getTurnAroundTimeMemoryPosition() {
+        return startMemoryAllocation + 6;
     }
 }

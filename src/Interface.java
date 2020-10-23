@@ -2,8 +2,8 @@ import java.util.*;
 
 public class Interface {
 
-    private static Comparator<Process> comparatorPriority = Comparator.comparingInt(c -> c.priority);
-    private static Comparator<Process> comparatorCode = Comparator.comparingInt(c -> c.code);
+    public static Comparator<Process> comparatorPriority = Comparator.comparingInt(c -> c.priority);
+    public static Comparator<Process> comparatorCode = Comparator.comparingInt(c -> c.code);
 
     static SortedSet<Process> processes = new TreeSet<>(comparatorPriority.thenComparing(comparatorCode));
 
@@ -98,7 +98,7 @@ public class Interface {
 
     private static void startSystem() {
         if (scalingType == CPU.SCALING_PRIORITY) {
-            new PriorityCPU(processes).start();
+            new ScaleByPriorityCPU(processes).start();
         }
 
     }
@@ -178,8 +178,12 @@ public class Interface {
         int arrivalTime = scanner.nextInt();
 
         Program program = new Program(nomePrograma, debugMode);
-        Process process = new Process(processes.size(), program, priority, arrivalTime);
 
-        processes.add(process);
+        if (program != null) {
+            Process process = new Process(processes.size(), program, priority, arrivalTime, program.memory.size());
+
+            processes.add(process);
+        }
+
     }
 }
