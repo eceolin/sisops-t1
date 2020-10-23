@@ -4,7 +4,7 @@ public class Process {
     public Program program;
     public int priority;
 
-    private int startMemoryAllocation;
+    public int startMemoryAllocation;
     public int arrivalTime;
 
     public int totalMemory;

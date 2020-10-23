@@ -25,7 +25,7 @@ public abstract class CPU {
     public void start() {
 
         this.memory = new String[calculateMemorySize()];
-        this.memory[0] = "0"; //reserved to OS
+        this.memory[0] = "1"; //reserved to OS
 
         int clock = 0;
 

@@ -66,10 +66,15 @@ public class ScaleByPriorityCPU extends CPU {
             String instruction = memory[actualPcPosition];
 
             System.out.println(instruction);
+            System.out.println(memory[process.getAccumulatorMemoryPosition()]);
+            System.out.println(actualClock);
 
-            memory[process.getPCMemoryPosition()] = String.valueOf(actualPcPosition + 1);
+            try {
+                actualClock += Interpreter.interpret(instruction, process, memory);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
-            actualClock++;
             updateAllTimes();
 
             if (instruction.equals("SYSCALL 0")) {
