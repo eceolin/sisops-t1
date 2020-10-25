@@ -20,6 +20,7 @@ public class Interpreter {
     private static int systemOperation(String instruction, Process process, String[] memory) {
 
         int blockedTime = new Random().nextInt(30) + 10;
+        System.out.println("blocked time: " + blockedTime);
 
         if (instruction.equals("SYSCALL 1")) {
             System.out.println("Valor do acumulador: " + memory[process.getAccumulatorMemoryPosition()]);
@@ -121,7 +122,7 @@ public class Interpreter {
 
             valueToAdd = searchForVariableValue(process.startMemoryAllocation, process.totalMemory, instruction.split(" ")[1], memory);
 
-            memory[process.getAccumulatorMemoryPosition()] = String.valueOf(Integer.valueOf(memory[process.getAccumulatorMemoryPosition()]) + valueToAdd);
+            memory[process.getAccumulatorMemoryPosition()] = String.valueOf(valueToAdd);
 
         } else if (instruction.contains("STORE")) {
             int positionToStore = searchForVariablePosition(process.startMemoryAllocation, process.totalMemory, instruction.split(" ")[1], memory);

@@ -52,15 +52,8 @@ public class ScaleByPriorityCPU extends CPU {
         };
     }
 
-    private boolean isBlocked(Process p) {
-        String value = memory[p.getStateMemoryPosition()];
-
-        return value.equals(STATUS_BLOCKED);
-
-    }
-
     @Override
-    protected int run(int clock, Process process) {
+    protected int run(int clock, Process process) throws Exception {
 
         int actualClock = clock;
 
@@ -71,29 +64,20 @@ public class ScaleByPriorityCPU extends CPU {
 
             int actualPcPosition = Integer.valueOf(memory[process.getPCMemoryPosition()]);
 
-
-            System.out.println("clock:" + actualClock);
-            System.out.println("acc: " + memory[process.getAccumulatorMemoryPosition()]);
-            System.out.println("running time: " + memory[process.getRunningTimeMemoryPosition()]);
             String instruction = memory[actualPcPosition];
-            System.out.println(instruction);
 
             updateAllTimes();
+            loadProcesses(actualClock);
 
-            try {
-                if (!isBlocked(process)) {
-                    actualClock += Interpreter.interpret(instruction, process, memory);
-                } else {
-                    actualClock += 1;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (!isBlocked(process)) {
+                actualClock += Interpreter.interpret(instruction, process, memory);
+            } else {
+                actualClock += 1;
             }
 
-            if (isBlocked(process)) {
-                while (isBlocked(process)) {
-                    updateAllTimes();
-                }
+            //Nesta política não tem timeout (quantum)
+            while (isBlocked(process)) {
+                updateAllTimes();
             }
 
             if (instruction.equals("SYSCALL 0")) {

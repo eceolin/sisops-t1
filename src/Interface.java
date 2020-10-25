@@ -19,14 +19,14 @@ public class Interface {
     private static final int YES_OPTION = 1;
     private static final int NO_OPTION = 0;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         debugMode = args.length > 0 && args[0].equals("debug");
 
         carregar();
     }
 
 
-    private static void carregar() {
+    private static void carregar() throws Exception {
         int opcao = showInitialMenu();
 
         while (opcao == SCALING_OPTION) {
@@ -96,7 +96,7 @@ public class Interface {
         return opcao;
     }
 
-    private static void startSystem() {
+    private static void startSystem() throws Exception {
         if (scalingType == CPU.SCALING_PRIORITY) {
             new ScaleByPriorityCPU(processes).start();
         }

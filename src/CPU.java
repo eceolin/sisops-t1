@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public abstract class CPU {
@@ -15,6 +12,7 @@ public abstract class CPU {
 
     protected String[] memory;
 
+    protected static final String STATUS_NOT_READY = "NOT_READY";
     protected static final String STATUS_IDLE = "IDLE";
     protected static final String STATUS_RUNNING = "RUNNING";
     protected static final String STATUS_FINISHED = "FINISHED";
@@ -24,7 +22,7 @@ public abstract class CPU {
     public CPU() {
     }
 
-    public void start() {
+    public void start() throws Exception {
 
         this.memory = new String[calculateMemorySize()];
         this.memory[0] = "1"; //reserved to OS
@@ -33,20 +31,29 @@ public abstract class CPU {
 
         boolean running = true;
 
+        //TODO: Fazer parada quando acabam as instrucoes
+
+        for (Process process : getAllProcesses()) {
+            allocateMemory(process);
+        }
+
         while (running) {
 
             Process process = this.getNextReadyProcess(clock);
 
             if (process != null) {
-                initializeMemory(process);
+                System.out.println("Executando processo: " + process.code);
 
                 int newClock = run(clock, process);
+
 
                 clock = newClock;
             } else {
                 boolean isAllFinished = isAllFinished();
 
+
                 if (!isAllFinished) {
+                    updateAllTimes();
                     clock++;
                 } else {
                     break;
@@ -54,9 +61,40 @@ public abstract class CPU {
             }
         }
 
-        System.out.println("FIM");
+        for (Process process : getAllProcesses()) {
+            System.out.println();
+            System.out.println("Nome do processo: " + process.code);
+            System.out.println("Idle time: " + memory[process.getIdleTimeMemoryPosition()]);
+            System.out.println("Running time: " + memory[process.getRunningTimeMemoryPosition()]);
+            System.out.println("Turn around time: " + memory[process.getTurnAroundTimeMemoryPosition()]);
+        }
 
+    }
 
+    protected boolean isLastInstruction(Process p) {
+        int pc = Integer.parseInt(memory[p.getPCMemoryPosition()]);
+
+        int first = p.getFirstInstructionMemoryPosition();
+
+        int last = first + p.program.totalInstructions;
+
+        return pc == last;
+    }
+
+    protected boolean isBlocked(Process p) {
+        String value = memory[p.getStateMemoryPosition()];
+
+        return value.equals(STATUS_BLOCKED);
+
+    }
+
+    protected void loadProcesses(int clock) {
+
+        for (Process process : getAllProcesses()) {
+            if (clock >= process.arrivalTime && memory[process.getStateMemoryPosition()].equals(STATUS_NOT_READY)) {
+                memory[process.getStateMemoryPosition()] = STATUS_IDLE;
+            }
+        }
     }
 
     private boolean isAllFinished() {
@@ -70,7 +108,7 @@ public abstract class CPU {
                 }).count() == 0;
     }
 
-    private void initializeMemory(Process process) {
+    private void allocateMemory(Process process) {
 
         int initialPosition = Integer.valueOf(memory[0]);
 
@@ -78,7 +116,7 @@ public abstract class CPU {
 
         memory[process.getAccumulatorMemoryPosition()] = "0";
         memory[process.getPCMemoryPosition()] = String.valueOf(process.getFirstInstructionMemoryPosition());
-        memory[process.getStateMemoryPosition()] = STATUS_IDLE;
+        memory[process.getStateMemoryPosition()] = STATUS_NOT_READY;
         memory[process.getArrivalTimeMemoryPosition()] = String.valueOf(process.arrivalTime);
         memory[process.getIdleTimeMemoryPosition()] = "0";
         memory[process.getRunningTimeMemoryPosition()] = "0";
@@ -130,16 +168,15 @@ public abstract class CPU {
             } else if (STATUS_BLOCKED.equals(processStatus)) {
                 int actual = Integer.valueOf(memory[process.getBlockedTimeMemoryPosition()]);
 
-                if (actual > 0) {
+                if (actual >= 0) {
                     decrementTime(process.getBlockedTimeMemoryPosition(), 1);
                 } else {
                     memory[process.getStateMemoryPosition()] = STATUS_IDLE;
-                    incrementTime(process.getIdleTimeMemoryPosition(), 1);
                 }
 
             }
 
-            if (!STATUS_FINISHED.equals(processStatus)) {
+            if (!STATUS_FINISHED.equals(processStatus) && !STATUS_NOT_READY.equals(processStatus)) {
                 incrementTime(process.getTurnAroundTimeMemoryPosition(), 1);
             }
 
@@ -156,7 +193,7 @@ public abstract class CPU {
 
     protected abstract Process getNextReadyProcess(int clock);
 
-    protected abstract int run(int clock, Process process);
+    protected abstract int run(int clock, Process process) throws Exception;
 
     protected abstract List<Process> getAllProcesses();
 }
