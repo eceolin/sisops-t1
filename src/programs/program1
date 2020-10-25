@@ -3,9 +3,14 @@
     ponto1: SUB #1
     SYSCALL 1
     BRPOS ponto1
+    SYSCALL 1
+    STORE ToSave
+    LOAD ToSave
+    SYSCALL 1
     SYSCALL 0
 .endcode
 
 .data
-    Variable 10
+    Variable 5
+    ToSave 1
 .enddata

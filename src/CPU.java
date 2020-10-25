@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,6 +18,7 @@ public abstract class CPU {
     protected static final String STATUS_IDLE = "IDLE";
     protected static final String STATUS_RUNNING = "RUNNING";
     protected static final String STATUS_FINISHED = "FINISHED";
+    protected static final String STATUS_BLOCKED = "BLOCKED";
 
 
     public CPU() {
@@ -31,7 +33,7 @@ public abstract class CPU {
 
         boolean running = true;
 
-        while(running) {
+        while (running) {
 
             Process process = this.getNextReadyProcess(clock);
 
@@ -81,6 +83,7 @@ public abstract class CPU {
         memory[process.getIdleTimeMemoryPosition()] = "0";
         memory[process.getRunningTimeMemoryPosition()] = "0";
         memory[process.getTurnAroundTimeMemoryPosition()] = "0";
+        memory[process.getBlockedTimeMemoryPosition()] = "0";
 
         int cont = process.getFirstInstructionMemoryPosition();
 
@@ -88,6 +91,7 @@ public abstract class CPU {
             memory[cont] = instruction;
 
             //serve para alterar para a nova posicao de memoria
+            //label quando inicializa utiliza a posicao de memoria sem estar na memoria principal
             if (instruction.contains("LABEL")) {
                 String[] inst = instruction.split(" ");
 
@@ -114,23 +118,40 @@ public abstract class CPU {
         memory[process.getStateMemoryPosition()] = STATUS_FINISHED;
     }
 
-    //TODO: Terminar todos os tempos
     protected void updateAllTimes() {
         for (Process process : getAllProcesses()) {
 
             String processStatus = memory[process.getStateMemoryPosition()];
 
             if (STATUS_IDLE.equals(processStatus)) {
-                int actual = Integer.valueOf(memory[process.getIdleTimeMemoryPosition()]);
-
-                memory[process.getIdleTimeMemoryPosition()] = String.valueOf((actual + 1));
+                incrementTime(process.getIdleTimeMemoryPosition(), 1);
             } else if (STATUS_RUNNING.equals(processStatus)) {
-                int actual = Integer.valueOf(memory[process.getRunningTimeMemoryPosition()]);
+                incrementTime(process.getRunningTimeMemoryPosition(), 1);
+            } else if (STATUS_BLOCKED.equals(processStatus)) {
+                int actual = Integer.valueOf(memory[process.getBlockedTimeMemoryPosition()]);
 
-                memory[process.getRunningTimeMemoryPosition()] = String.valueOf((actual + 1));
+                if (actual > 0) {
+                    decrementTime(process.getBlockedTimeMemoryPosition(), 1);
+                } else {
+                    memory[process.getStateMemoryPosition()] = STATUS_IDLE;
+                    incrementTime(process.getIdleTimeMemoryPosition(), 1);
+                }
+
+            }
+
+            if (!STATUS_FINISHED.equals(processStatus)) {
+                incrementTime(process.getTurnAroundTimeMemoryPosition(), 1);
             }
 
         }
+    }
+
+    private void incrementTime(int memoryPosition, int totalTimeToIncrement) {
+        memory[memoryPosition] = String.valueOf(Integer.parseInt(memory[memoryPosition]) + 1);
+    }
+
+    private void decrementTime(int memoryPosition, int totalTimeToDecrement) {
+        memory[memoryPosition] = String.valueOf(Integer.parseInt(memory[memoryPosition]) - 1);
     }
 
     protected abstract Process getNextReadyProcess(int clock);

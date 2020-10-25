@@ -35,7 +35,7 @@ public class ScaleByPriorityCPU extends CPU {
     }
 
     private Predicate<Process> isNotOnReadyQueue() {
-        return p -> ready== null || !ready.contains(p);
+        return p -> ready == null || !ready.contains(p);
     }
 
     private Predicate<Process> isAvailableToProcess(int clock) {
@@ -52,30 +52,49 @@ public class ScaleByPriorityCPU extends CPU {
         };
     }
 
+    private boolean isBlocked(Process p) {
+        String value = memory[p.getStateMemoryPosition()];
+
+        return value.equals(STATUS_BLOCKED);
+
+    }
+
     @Override
     protected int run(int clock, Process process) {
 
         int actualClock = clock;
 
-        memory[process.getStateMemoryPosition()] = STATUS_RUNNING;
 
-        while(true) {
+        while (true) {
+
+            memory[process.getStateMemoryPosition()] = STATUS_RUNNING;
 
             int actualPcPosition = Integer.valueOf(memory[process.getPCMemoryPosition()]);
 
-            String instruction = memory[actualPcPosition];
 
+            System.out.println("clock:" + actualClock);
+            System.out.println("acc: " + memory[process.getAccumulatorMemoryPosition()]);
+            System.out.println("running time: " + memory[process.getRunningTimeMemoryPosition()]);
+            String instruction = memory[actualPcPosition];
             System.out.println(instruction);
-            System.out.println(memory[process.getAccumulatorMemoryPosition()]);
-            System.out.println(actualClock);
+
+            updateAllTimes();
 
             try {
-                actualClock += Interpreter.interpret(instruction, process, memory);
+                if (!isBlocked(process)) {
+                    actualClock += Interpreter.interpret(instruction, process, memory);
+                } else {
+                    actualClock += 1;
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            updateAllTimes();
+            if (isBlocked(process)) {
+                while (isBlocked(process)) {
+                    updateAllTimes();
+                }
+            }
 
             if (instruction.equals("SYSCALL 0")) {
                 finishProcess(process);

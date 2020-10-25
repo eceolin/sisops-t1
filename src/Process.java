@@ -9,7 +9,7 @@ public class Process {
 
     public int totalMemory;
 
-    public static final int TOTAL_RESERVED_POSITIONS = 7;
+    public static final int TOTAL_RESERVED_POSITIONS = 8;
 
     public Process(int code, Program program, int priority, int arrivalTime, int totalMemory) {
         this.code = code;
@@ -37,6 +37,10 @@ public class Process {
     }
 
     public int getFirstInstructionMemoryPosition() {
+        return startMemoryAllocation + 8;
+    }
+
+    public int getBlockedTimeMemoryPosition() {
         return startMemoryAllocation + 7;
     }
 
