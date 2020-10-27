@@ -1,11 +1,29 @@
 .code
-    LOAD variable
-    ponto1: ADD #1
-    SYSCALL 1
-    SYSCALL 0
+  load controle
+  syscall 2
+  store controle
+loop:
+  BRZERO fim
+  load a
+  add b
+  store aux
+  load b
+  store a
+  load aux
+  store b
+  load controle
+  sub #1
+  store controle
+  BRANY loop
+fim:
+  load b
+  syscall 1
+  syscall 0
 .endcode
 
 .data
-    Variable -5
-    ToSave 1
+  a 0
+  b 1
+  controle 0
+  aux 0
 .enddata

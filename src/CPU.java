@@ -42,8 +42,6 @@ public abstract class CPU {
             Process process = this.getNextReadyProcess(clock);
 
             if (process != null) {
-                System.out.println("Executando processo: " + process.code);
-
                 int newClock = run(clock, process);
 
 

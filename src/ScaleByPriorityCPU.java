@@ -80,7 +80,7 @@ public class ScaleByPriorityCPU extends CPU {
                 updateAllTimes();
             }
 
-            if (instruction.equals("SYSCALL 0")) {
+            if (instruction.equals("SYSCALL 0") || isLastInstruction(process)) {
                 finishProcess(process);
                 break;
             }

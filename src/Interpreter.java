@@ -20,11 +20,10 @@ public class Interpreter {
     private static int systemOperation(String instruction, Process process, String[] memory) {
 
         int blockedTime = new Random().nextInt(30) + 10;
-        System.out.println("blocked time: " + blockedTime);
 
-        if (instruction.equals("SYSCALL 1")) {
+        if (instruction.equalsIgnoreCase("SYSCALL 1")) {
             System.out.println("Valor do acumulador: " + memory[process.getAccumulatorMemoryPosition()]);
-        } else if (instruction.equals("SYSCALL 2")) {
+        } else if (instruction.equalsIgnoreCase("SYSCALL 2")) {
             System.out.println("Digite um valor inteiro: ");
             Scanner scanner = new Scanner(System.in);
             memory[process.getAccumulatorMemoryPosition()] = String.valueOf(scanner.nextInt());
@@ -41,28 +40,32 @@ public class Interpreter {
         memory[process.getPCMemoryPosition()] = String.valueOf(Integer.valueOf(memory[process.getPCMemoryPosition()]) + total);
     }
 
+    private static boolean containsIgnorecase(String str, String str2) {
+        return str.toLowerCase().contains(str2.toLowerCase()) || str2.toLowerCase().contains(str.toLowerCase());
+    }
+
     private static boolean isArithmeticOperation(String instruction) {
-        return instruction.contains("ADD") ||
-                instruction.contains("SUB") ||
-                instruction.contains("MULT") ||
-                instruction.contains("DIV");
+        return containsIgnorecase("ADD", instruction) ||
+                containsIgnorecase("SUB", instruction) ||
+                containsIgnorecase("MULT", instruction) ||
+                containsIgnorecase("DIV", instruction);
     }
 
     private static boolean isMemoryOperation(String instruction) {
-        return instruction.contains("LOAD") ||
-                instruction.contains("STORE");
+        return containsIgnorecase("LOAD", instruction) ||
+                containsIgnorecase("STORE", instruction);
     }
 
     private static boolean isJumpOperation(String instruction) {
-        return instruction.contains("BRANY") ||
-                instruction.contains("BRPOS") ||
-                instruction.contains("BRZERO") ||
-                instruction.contains("BRNEG")
+        return containsIgnorecase("BRANY", instruction) ||
+                containsIgnorecase("BRPOS", instruction) ||
+                containsIgnorecase("BRZERO", instruction) ||
+                containsIgnorecase("BRNEG", instruction)
                 ;
     }
 
     private static boolean isSystemOperation(String instruction) {
-        return instruction.contains("SYSCALL");
+        return containsIgnorecase("SYSCALL", instruction);
     }
 
     private static int arithmeticOperation(String instruction, Process process, String[] memory) throws Exception {
@@ -76,13 +79,13 @@ public class Interpreter {
 
         int newAcc = Integer.valueOf(memory[process.getAccumulatorMemoryPosition()]);
 
-        if (instruction.contains("ADD")) {
+        if (containsIgnorecase("ADD", instruction)) {
             newAcc += value;
-        } else if (instruction.contains("SUB")) {
+        } else if (containsIgnorecase("SUB", instruction)) {
             newAcc -= value;
-        } else if (instruction.contains("MULT")) {
+        } else if (containsIgnorecase("MULT", instruction)) {
             newAcc *= value;
-        } else if (instruction.contains("DIV")) {
+        } else if (containsIgnorecase("DIV", instruction)) {
             newAcc /= value;
         }
 
@@ -102,13 +105,13 @@ public class Interpreter {
     }
 
     private static void move(String instruction, int accValue, Process process, String[] memory, int newPosition) {
-        if (instruction.contains("BRPOS") && accValue > 0) {
+        if (containsIgnorecase("BRPOS", instruction) && accValue > 0) {
             memory[process.getPCMemoryPosition()] = String.valueOf(newPosition);
-        } else if (instruction.contains("BRZERO") && accValue == 0) {
+        } else if (containsIgnorecase("BRZERO", instruction) && accValue == 0) {
             memory[process.getPCMemoryPosition()] = String.valueOf(newPosition);
-        } else if (instruction.contains("BRNEG") && accValue < 0) {
+        } else if (containsIgnorecase("BRNEG", instruction) && accValue < 0) {
             memory[process.getPCMemoryPosition()] = String.valueOf(newPosition);
-        } else if (instruction.contains("BRANY")) {
+        } else if (containsIgnorecase("BRANY", instruction)) {
             memory[process.getPCMemoryPosition()] = String.valueOf(newPosition);
         } else {
             incrementPC(memory, process, 1);
@@ -117,17 +120,17 @@ public class Interpreter {
 
     private static int memoryOperation(String instruction, Process process, String[] memory) throws Exception {
 
-        if (instruction.contains("LOAD")) {
+        if (containsIgnorecase("LOAD", instruction)) {
             int valueToAdd = 0;
 
             valueToAdd = searchForVariableValue(process.startMemoryAllocation, process.totalMemory, instruction.split(" ")[1], memory);
 
             memory[process.getAccumulatorMemoryPosition()] = String.valueOf(valueToAdd);
 
-        } else if (instruction.contains("STORE")) {
+        } else if (containsIgnorecase("STORE", instruction)) {
             int positionToStore = searchForVariablePosition(process.startMemoryAllocation, process.totalMemory, instruction.split(" ")[1], memory);
 
-            memory[positionToStore] = memory[positionToStore].split(" ")[0] + " " + memory[process.getAccumulatorMemoryPosition()];
+            memory[positionToStore] = "variable " + memory[positionToStore].split(" ")[1] + " " + memory[process.getAccumulatorMemoryPosition()];
         }
 
         incrementPC(memory, process, 1);
@@ -139,7 +142,7 @@ public class Interpreter {
 
         while (cont < processMaxMem) {
 
-            if (memory[cont + processMemoryPosition].toLowerCase().startsWith(variable.toLowerCase())) {
+            if (memory[cont + processMemoryPosition].toLowerCase().startsWith("variable "+ variable.toLowerCase())) {
                 return cont + processMemoryPosition;
             }
 
@@ -150,7 +153,7 @@ public class Interpreter {
     }
 
     private static int searchForVariableValue(int processMemoryPosition, int processMaxMem, String variable, String[] memory) throws Exception {
-        return Integer.valueOf(memory[searchForVariablePosition(processMemoryPosition, processMaxMem, variable, memory)].split(" ")[1]);
+        return Integer.valueOf(memory[searchForVariablePosition(processMemoryPosition, processMaxMem, variable, memory)].split(" ")[2]);
     }
 
     private static int searchForLabelValue(int processMemoryPosition, int processMaxMem, String variable, String[] memory) throws Exception {

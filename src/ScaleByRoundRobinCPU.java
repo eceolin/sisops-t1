@@ -20,7 +20,7 @@ public class ScaleByRoundRobinCPU extends CPU {
 
         for (Process process : allProcesses) {
             if (memory[process.getStateMemoryPosition()].equals(STATUS_IDLE) && !readyProcesses.contains(process)) {
-                readyProcesses.add(process);
+                readyProcesses.offer(process);
             }
         }
 
@@ -63,7 +63,7 @@ public class ScaleByRoundRobinCPU extends CPU {
                     break;
                 }
             } else {
-                actualClock += 1;
+                break;
             }
 
             updateAllTimes();

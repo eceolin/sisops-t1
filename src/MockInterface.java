@@ -16,8 +16,8 @@ public class MockInterface {
             SortedSet<Process> processes = new TreeSet<>(comparatorPriority.thenComparing(comparatorCode));
 
             processes.add(process);
-            processes.add(process2);
-            processes.add(process3);
+            //processes.add(process2);
+            //processes.add(process3);
 
             new ScaleByPriorityCPU(processes).start();
         }

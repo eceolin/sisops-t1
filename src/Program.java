@@ -41,6 +41,8 @@ public class Program {
 
         int i = 0;
 
+        boolean isVariable = false;
+
         while (br.ready()) {
             String linha = br.readLine();
 
@@ -48,12 +50,14 @@ public class Program {
                 if (linha.equals(".code")) {
                     continue;
                 } else if (linha.equals(".data")) {
+                    isVariable = true;
                     continue;
                 } else if (linha.equals(".endcode")) {
                     totalInstructions = i;
                     i = 0;
                 } else if (linha.equals(".enddata")) {
                     totalVariables = i;
+                    isVariable = false;
                     i = 0;
                 } else {
 
@@ -62,15 +66,24 @@ public class Program {
                         totalLabels++;
                         String[] args = linha.split(":");
 
-                        Matcher m = PATTERN.matcher(args[1]);
-                        m.find();
-                        memory.add(m.group());
+
                         labels.add("LABEL " + args[0].trim() + " " + i);
 
+                        if (args.length > 1) {
+                            Matcher m = PATTERN.matcher(args[1]);
+                            m.find();
+                            memory.add(m.group());
+                        } else {
+                            i--;
+                        }
+
+
                     } else {
+                        String variable = isVariable ? "variable " : "";
+
                         Matcher m = PATTERN.matcher(linha);
                         m.find();
-                        memory.add(m.group());
+                        memory.add(variable + m.group());
                     }
 
                     i++;
